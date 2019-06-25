@@ -8,10 +8,10 @@
 
 #if os(macOS)
 import Cocoa
-typealias Color = NSColor
+public typealias Color = NSColor
 #else
 import UIKit
-typealias Color = UIColor
+public typealias Color = UIColor
 #endif
 
 
@@ -79,12 +79,12 @@ typealias Color = UIColor
      - parameter rgba: String value.
      */
     public convenience init(rgba_throws rgba: String) throws {
-        guard rgba.hasPrefix("#") else {
-            let error = UIColorInputError.missingHashMarkAsPrefix(rgba)
-            print(error.localizedDescription)
-            throw error
-        }
-        
+//        guard rgba.hasPrefix("#") else {
+//            let error = UIColorInputError.missingHashMarkAsPrefix(rgba)
+//            print(error.localizedDescription)
+//            throw error
+//        }
+
         let hexString: String = String(rgba[String.Index(utf16Offset: 1, in: rgba)...])
         var hexValue:  UInt32 = 0
         
@@ -173,3 +173,59 @@ typealias Color = UIColor
         return hexString
     }
 }
+
+public extension Color {
+    var HSBA:(CGFloat,CGFloat,CGFloat,CGFloat) {
+        var hue:CGFloat = 0; var saturation:CGFloat = 0; var brightness:CGFloat = 0; var alpha:CGFloat = 0
+        self.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+        return (hue * 255, saturation * 255, brightness * 255, alpha)
+    }
+    var RGBA:(CGFloat,CGFloat,CGFloat,CGFloat) {
+        var r:CGFloat = 0; var g:CGFloat = 0; var b:CGFloat = 0; var alpha:CGFloat = 0
+        self.getRed(&r, green: &g, blue: &b, alpha: &alpha)
+        return (r*255, g*255, b*255, alpha*255)
+    }
+
+    func lightenColor(_ amount:CGFloat) -> Color {
+        let hsba = self.HSBA
+        let newB = self.HSBA.2 + amount
+        return Color(hue: hsba.0, saturation: hsba.1, brightness: newB, alpha: hsba.3)
+    }
+
+    func darkenColor(_ amount:CGFloat) -> Color {return lightenColor(-amount)}
+
+    func spinColor(_ angle:CGFloat) -> Color {
+        let hsba = self.HSBA
+        let angle = fmodf(Float(hsba.0 + angle), 360)
+        return Color(hue: CGFloat(angle), saturation: hsba.1, brightness: hsba.2, alpha: hsba.3)
+    }
+
+    func saturateColor(_ amount:CGFloat) -> Color {
+        let hsba = self.HSBA
+        let newS = self.HSBA.1 + amount
+        return Color(hue: hsba.0, saturation: newS, brightness: hsba.2, alpha: hsba.3)
+    }
+    func desaturateColor(_ amount:CGFloat) -> Color {
+        return self.saturateColor(-amount)
+    }
+}
+
+
+//extension UIColor{
+//    static func blending(blend:ColorBlend, c1:Float, c2:Float) -> Float {
+//        switch blend {
+//        case .Multiply:
+//        case .Screen:
+//        case .Overlay:
+//        case .Softlight:
+//
+//        }
+//    }
+//    static func - (lhs:UIColor, rhs:UIColor) -> UIColor {
+//        return fabsf(color1 - color2)
+//    }
+//}
+//
+//public enum ColorBlend {
+//    case Multiply, Screen, Overlay, Softlight, Hardlight, Difference, Exclusion
+//}
